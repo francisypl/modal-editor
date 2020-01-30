@@ -1,0 +1,51 @@
+.image-editor-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-editor-container .image-editor-background {
+  position: absolute;
+  background: #232323;
+}
+
+.image-editor-container .image-editor-background img {
+  will-change: transform;
+  transform-origin: left top 0px;
+  opacity: 0.2;
+}
+
+.image-editor-container .image-editor-background .image-editor-mask img {
+  opacity: 1;
+}
+
+.image-editor-container .image-editor-mask {
+  position: absolute;
+  overflow: hidden;
+  background: transparent;
+  transform: rotate(0deg); /* Webkit hack */
+  cursor: move;
+  left: 0;
+  top: 0;
+}
+
+.image-editor-focal-point {
+  border: 1px solid white;
+  border-radius: 50%;
+  background: rgba(2, 197, 76, 0.7);
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+  cursor: grab;
+  transform: translate(-50%, -50%);
+}
+
+.image-editor-focal-point:active {
+  cursor: -webkit-grabbing;
+  cursor: -moz-grabbing;
+  cursor: grabbing;
+}
+
+.image-editor-disable {
+  pointer-events: none;
+  opacity: 0.5 !important;
+  cursor: not-allowed;
+}

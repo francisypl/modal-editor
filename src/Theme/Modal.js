@@ -13,9 +13,10 @@ export default function Modal() {
     <div id="modal">
       <div id="modal-content">
         <ImageEditor
-          src="https://img1.wsimg.com/isteam/stock/1036"
+          src="//img1.wsimg.com/isteam/stock/101785/:/rs=w:500,cg:true,m"
           height={200}
           width={600}
+          onCrop={e => console.log(e)}
           cropStyle="sqaure"
           editorState={state}
           config={{ showCropTool: true }}

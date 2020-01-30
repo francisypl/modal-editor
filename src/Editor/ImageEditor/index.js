@@ -27,6 +27,7 @@ export default class ImageEditor extends PureComponent {
   constructor(props) {
     super(props);
     this.canvas = React.createRef();
+    this.state = { img: null };
   }
 
   componentDidMount() {
@@ -47,7 +48,8 @@ export default class ImageEditor extends PureComponent {
       effects,
       saturation = 0
     } = editorState;
-    const { ctx, img } = this;
+    const { ctx } = this;
+    const { img } = this.state;
     if (!img) {
       return;
     }
@@ -105,19 +107,23 @@ export default class ImageEditor extends PureComponent {
 
   onImageLoaded = event => {
     const { onImageLoaded } = this.props;
-    this.img = event.target;
-    onImageLoaded && onImageLoaded(this.img);
+    console.log("sup");
+    this.setState({ img: event.target });
+    onImageLoaded && onImageLoaded(event.target);
     this.renderImage();
   };
 
   render() {
     const { src, config, onCrop, editorState, width, height } = this.props;
     const { scale } = editorState;
+    const { img } = this.state;
     const { showCropTool } = config;
+
+    console.log(showCropTool, this.img, img);
 
     return (
       <div style={{ width, height, position: "relative" }}>
-        {showCropTool && this.img && (
+        {showCropTool && img && (
           <CropTool
             onChange={onCrop}
             width={this._imgWidth * scale}
