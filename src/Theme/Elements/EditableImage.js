@@ -12,7 +12,7 @@ import AppStoreContext, {
 } from "../../common/AppStoreContext";
 import ImageEditor from "../../Editor/ImageEditor";
 
-export function EditableImage({ style, editing, ...props }) {
+export function EditableImage({ style, editing, src, ...props }) {
   const [showEditOption, setShowEditOption] = useState(false);
   const [ref, setRef] = useState();
   const { dispatch } = useContext(AppStoreContext);
@@ -24,7 +24,7 @@ export function EditableImage({ style, editing, ...props }) {
   function handleStartCrop(cropStyle) {
     dispatch({
       type: SET_MODAL_ACTION,
-      payload: <ImageEditor cropStyle={cropStyle} />
+      payload: <ImageEditor cropStyle={cropStyle} src={src} />
     });
   }
 
@@ -47,7 +47,7 @@ export function EditableImage({ style, editing, ...props }) {
       onMouseLeave={() => setShowEditOption(false)}
     >
       {imageEditToolbar}
-      <Image style={{ width: "100%", ...style }} {...props} />
+      <Image style={{ width: "100%", ...style }} src={src} {...props} />
     </div>
   );
 }

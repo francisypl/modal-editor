@@ -6,7 +6,8 @@ export default class EditorView extends Component {
   constructor() {
     super(...arguments);
     this.state = {
-      editorState: EditorState.createEmpty()
+      editorState: EditorState.createEmpty(),
+      cropping: !!this.props.cropStyle
     };
   }
 
@@ -90,7 +91,7 @@ export default class EditorView extends Component {
   };
 
   render() {
-    const { src } = this.props;
+    const { src, cropStyle } = this.props;
     const styles = {
       container: {
         display: "flex",
@@ -206,8 +207,9 @@ export default class EditorView extends Component {
           editorState={editorState}
           onCrop={this.onCrop}
           onImageLoaded={this.onImageLoaded}
+          cropStyle={cropStyle}
           width={900}
-          height={600}
+          height={900}
         />
         <div style={{ marginTop: 20 }}>
           <label>

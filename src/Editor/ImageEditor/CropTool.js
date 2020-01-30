@@ -1,11 +1,23 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 
+import * as cropStyles from "../../constants/cropStyles";
+
 const DEFAULT_CROP = {
   top: "10%",
   left: "10%",
   right: "10%",
   bottom: "10%"
+};
+
+const VERTICAL_ASPECT_RATIO = {
+  width: 9,
+  height: 16
+};
+
+const HORIZONTAL_ASPECT_RATIO = {
+  width: 16,
+  height: 9
 };
 
 function minMax(val, min, max) {
@@ -17,9 +29,72 @@ function haltEvent(event) {
   event.preventDefault();
 }
 
+function getSquareCrop(width, height) {
+  let size = [];
+  if (width > height) {
+    const space = (width - height) / 2;
+    const percent = space / width;
+    size = [0, percent, 0, percent];
+  } else if (height > width) {
+    const space = (height - width) / 2;
+    const percent = space / height;
+    size = [percent, 0, percent, 0];
+  } else {
+    size = [0, 0, 0, 0];
+  }
+  return size;
+}
+
+function cropHeightWithAspectRatio(width, height, aspectRatio) {
+  const newHeight = (aspectRatio.height * width) / aspectRatio.width;
+  const space = (height - newHeight) / 2;
+  const percent = space / height;
+  return [percent, 0, percent, 0];
+}
+
+function cropWidthWithAspectRaio(width, height, aspectRatio) {
+  const newWidth = (aspectRatio.width * height) / aspectRatio.height;
+  const space = (width - newWidth) / 2;
+  const percent = space / width;
+  return [0, percent, 0, percent];
+}
+
+function getHorizontalCrop(width, height) {
+  let size = [0, 0, 0, 0];
+  if (height > width) {
+    size = cropHeightWithAspectRatio(width, height, HORIZONTAL_ASPECT_RATIO);
+    if (size.some(size => size < 0)) {
+      size = cropWidthWithAspectRaio(width, height, HORIZONTAL_ASPECT_RATIO);
+    }
+  } else if (width > height) {
+    size = cropWidthWithAspectRaio(width, height, HORIZONTAL_ASPECT_RATIO);
+    if (size.some(size => size < 0)) {
+      size = cropHeightWithAspectRatio(width, height, HORIZONTAL_ASPECT_RATIO);
+    }
+  }
+  return size;
+}
+
+function getVerticalCrop(width, height) {
+  let size = [0, 0, 0, 0];
+  if (width > height) {
+    size = cropWidthWithAspectRaio(width, height, VERTICAL_ASPECT_RATIO);
+    if (size.some(size => size < 0)) {
+      size = cropHeightWithAspectRatio(width, height, VERTICAL_ASPECT_RATIO);
+    }
+  } else if (height > width) {
+    size = cropHeightWithAspectRatio(width, height, VERTICAL_ASPECT_RATIO);
+    if (size.some(size => size < 0)) {
+      size = cropWidthWithAspectRaio(width, height, VERTICAL_ASPECT_RATIO);
+    }
+  }
+  return size;
+}
+
 export default class CropTool extends Component {
   static get propTypes() {
     return {
+      cropStyle: PropTypes.string,
       onChange: PropTypes.func.isRequired,
       width: PropTypes.number.isRequired,
       height: PropTypes.number.isRequired
@@ -28,7 +103,25 @@ export default class CropTool extends Component {
 
   constructor() {
     super(...arguments);
-    this.state = DEFAULT_CROP;
+    const { width, height, cropStyle } = this.props;
+    let size = [];
+    const sizeMap = ["top", "right", "bottom", "left"];
+    if (cropStyle === cropStyles.square) {
+      size = getSquareCrop(width, height);
+    } else if (cropStyle === cropStyles.horizontal) {
+      size = getHorizontalCrop(width, height);
+    } else if (cropStyle === cropStyles.vertical) {
+      size = getVerticalCrop(width, height);
+    } else if (cropStyle === cropStyles.freeform) {
+      size = [0, 0, 0, 0];
+    }
+    this.state =
+      size && size.length
+        ? size.reduce((final, value, index) => {
+            final[sizeMap[index]] = `${value * 100}%`;
+            return final;
+          }, {})
+        : DEFAULT_CROP;
     this.container = React.createRef();
   }
 
@@ -154,7 +247,7 @@ export default class CropTool extends Component {
   }
 
   render() {
-    const { width, height } = this.props;
+    const { width, height, cropStyle } = this.props;
     const { top, left, bottom, right } = this.state;
     const grabberCommon = {
       width: 10,

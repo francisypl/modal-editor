@@ -15,9 +15,9 @@ import {
 import Widget from "./Widget";
 
 const data = [
-  "https://img1.wsimg.com/isteam/stock/1036",
-  "https://img1.wsimg.com/isteam/stock/1036",
-  "https://img1.wsimg.com/isteam/stock/1051"
+  "https://img1.wsimg.com/isteam/stock/1036/:/rs=w:600,cg:true,m",
+  "https://img1.wsimg.com/isteam/stock/01rKYZ/:/rs=w:600,cg:true,m",
+  "https://img1.wsimg.com/isteam/stock/1051/:/rs=w:600,cg:true,m"
 ];
 
 // const data = [

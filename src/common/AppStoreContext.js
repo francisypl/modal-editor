@@ -2,6 +2,7 @@ import React, { createContext, useReducer } from "react";
 
 // actions
 export const SET_MODAL_ACTION = "SET_MODAL_ACTION";
+export const UNSET_MODAL_ACTION = "UNSET_MODAL_ACTION";
 
 const initialState = {
   modal: null
@@ -10,6 +11,9 @@ const initialState = {
 function reducer(state, { type, payload }) {
   if (type === SET_MODAL_ACTION) {
     return { ...state, modal: payload };
+  }
+  if (type === UNSET_MODAL_ACTION) {
+    return { ...state, modal: null };
   }
   return state;
 }

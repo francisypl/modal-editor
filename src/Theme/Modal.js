@@ -1,29 +1,23 @@
 import React, { useContext } from "react";
-import ImageEditor from "../Editor/ImageEditor";
-import EditorState from "../Editor/ImageEditor/EditorState";
 
-import AppStoreContext from "../common/AppStoreContext";
-
-const state = EditorState.createEmpty();
+import AppStoreContext, { UNSET_MODAL_ACTION } from "../common/AppStoreContext";
+import { Icon } from "../Theme/Elements";
 
 export default function Modal() {
-  // const { state } = useContext(AppStoreContext);
-  // if (state.modal) {
-  return (
-    <div id="modal">
-      <div id="modal-content">
-        <ImageEditor
-          src="//img1.wsimg.com/isteam/stock/101785/:/rs=w:500,cg:true,m"
-          height={200}
-          width={600}
-          onCrop={e => console.log(e)}
-          cropStyle="sqaure"
-          editorState={state}
-          config={{ showCropTool: true }}
-        />
+  const { state, dispatch } = useContext(AppStoreContext);
+  if (state.modal) {
+    return (
+      <div id="modal">
+        <div id="modal-content">
+          <Icon
+            onClick={() => dispatch({ type: UNSET_MODAL_ACTION })}
+            id="modal-close-icon"
+            name="close"
+          />
+          {state.modal}
+        </div>
       </div>
-    </div>
-  );
-  // }
-  // return null;
+    );
+  }
+  return null;
 }

@@ -12,6 +12,7 @@ export default class ImageEditor extends PureComponent {
     onCrop: PropTypes.func,
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
+    cropStyle: PropTypes.string,
     config: PropTypes.shape({
       showCropTool: PropTypes.bool,
       showFocalSelector: PropTypes.bool,
@@ -107,27 +108,34 @@ export default class ImageEditor extends PureComponent {
 
   onImageLoaded = event => {
     const { onImageLoaded } = this.props;
-    console.log("sup");
-    this.setState({ img: event.target });
-    onImageLoaded && onImageLoaded(event.target);
+    const img = event.target;
+    this.setState({ img });
+    onImageLoaded && onImageLoaded(img);
     this.renderImage();
   };
 
   render() {
-    const { src, config, onCrop, editorState, width, height } = this.props;
+    const {
+      src,
+      config,
+      onCrop,
+      editorState,
+      width,
+      height,
+      cropStyle
+    } = this.props;
     const { scale } = editorState;
     const { img } = this.state;
     const { showCropTool } = config;
-
-    console.log(showCropTool, this.img, img);
 
     return (
       <div style={{ width, height, position: "relative" }}>
         {showCropTool && img && (
           <CropTool
             onChange={onCrop}
-            width={this._imgWidth * scale}
-            height={this._imgHeight * scale}
+            cropStyle={cropStyle}
+            width={this._imgWidth * scale || img.width}
+            height={this._imgHeight * scale || img.height}
           />
         )}
         <canvas
@@ -137,6 +145,7 @@ export default class ImageEditor extends PureComponent {
           draggable={false}
         />
         <img
+          crossOrigin="Anonymous"
           src={src}
           style={{ display: "none" }}
           onLoad={this.onImageLoaded}
