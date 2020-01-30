@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import cx from "classnames";
 
 import { Image } from "./Image";
@@ -6,25 +6,29 @@ import { Image } from "./Image";
 import Layer from "../../Editor/Layer";
 import Align from "../../Editor/Align";
 import ImageToolbar from "../../Editor/ImageEditor/Toolbar";
-import CropEditor from "../../Editor/CropEditor";
-import * as cropStyles from "../../constants/cropStyles";
+// import CropEditor from "../../Editor/CropEditor";
+import AppStoreContext, {
+  SET_MODAL_ACTION
+} from "../../common/AppStoreContext";
+import ImageEditor from "../../Editor/ImageEditor";
 
 export function EditableImage({ style, editing, ...props }) {
   const [showEditOption, setShowEditOption] = useState(false);
-  const [showCropEditor, setShowCropEditor] = useState(editing);
-  const [cropStyle, setCropStyle] = useState(cropStyles.freeform);
   const [ref, setRef] = useState();
+  const { dispatch } = useContext(AppStoreContext);
 
   const saveRef = useCallback(ref => {
     setRef(ref);
   }, []);
 
   function handleStartCrop(cropStyle) {
-    setShowCropEditor(true);
-    setCropStyle(cropStyle);
+    dispatch({
+      type: SET_MODAL_ACTION,
+      payload: <ImageEditor cropStyle={cropStyle} />
+    });
   }
 
-  const showToolbar = showEditOption && !showCropEditor;
+  const showToolbar = showEditOption;
   const imageEditToolbar = showToolbar ? (
     <Layer>
       <Align node={ref} offset={{ top: 47, left: -10 }}>
@@ -32,10 +36,6 @@ export function EditableImage({ style, editing, ...props }) {
       </Align>
     </Layer>
   ) : null;
-
-  const shouldDisplayImage = !showCropEditor;
-
-  const imgEl = <Image style={{ width: "100%", ...style }} {...props} />;
 
   return (
     <div
@@ -47,12 +47,7 @@ export function EditableImage({ style, editing, ...props }) {
       onMouseLeave={() => setShowEditOption(false)}
     >
       {imageEditToolbar}
-      {shouldDisplayImage && imgEl}
-      {showCropEditor && (
-        <CropEditor cropStyle={cropStyle} src={props.src}>
-          {imgEl}
-        </CropEditor>
-      )}
+      <Image style={{ width: "100%", ...style }} {...props} />
     </div>
   );
 }
