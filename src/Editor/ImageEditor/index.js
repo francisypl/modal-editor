@@ -1,147 +1,226 @@
-import React, { PureComponent } from "react";
-import PropTypes from "prop-types";
+import React, { Component } from "react";
+import ImageEditor from "./Editor";
 import EditorState from "./EditorState";
-import CropTool from "./CropTool";
-import { grayscale, saturate } from "./utils";
 
-export default class ImageEditor extends PureComponent {
-  static propTypes = {
-    src: PropTypes.string.isRequired,
-    editorState: PropTypes.instanceOf(EditorState).isRequired,
-    onImageLoaded: PropTypes.func,
-    onCrop: PropTypes.func,
-    width: PropTypes.number.isRequired,
-    height: PropTypes.number.isRequired,
-    config: PropTypes.shape({
-      showCropTool: PropTypes.bool,
-      showFocalSelector: PropTypes.bool,
-      output: PropTypes.shape({
-        minWidth: PropTypes.number,
-        minHeight: PropTypes.number,
-        maxWidth: PropTypes.number,
-        maxHeight: PropTypes.number
-      })
-    })
+export default class EditorView extends Component {
+  constructor() {
+    super(...arguments);
+    this.state = {
+      editorState: EditorState.createEmpty()
+    };
+  }
+
+  rotateLeft = () => {
+    const { editorState } = this.state;
+    this.setState({
+      editorState: editorState.rotateImage(-90)
+    });
   };
 
-  constructor(props) {
-    super(props);
-    this.canvas = React.createRef();
-    this.state = { img: null };
-  }
+  rotateRight = () => {
+    const { editorState } = this.state;
+    this.setState({
+      editorState: editorState.rotateImage(90)
+    });
+  };
 
-  componentDidMount() {
-    this.ctx = this.canvas.current.getContext("2d");
-  }
+  flipHorizontal = () => {
+    const { editorState } = this.state;
+    this.setState({
+      editorState: editorState.flipHorizontal()
+    });
+  };
 
-  componentDidUpdate() {
-    this.renderImage();
-  }
+  flipVertical = () => {
+    const { editorState } = this.state;
+    this.setState({
+      editorState: editorState.flipVertical()
+    });
+  };
 
-  renderImage() {
-    const { editorState, width, height } = this.props;
-    const {
-      rotation,
-      crop = { top: "0%", left: "0%", width: "100%", height: "100%" },
-      scale = 1,
-      flip,
-      effects,
-      saturation = 0
-    } = editorState;
-    const { ctx } = this;
-    const { img } = this.state;
-    if (!img) {
-      return;
-    }
-    ctx.clearRect(0, 0, width, height);
-    ctx.save();
-    const { top, left, width: cropWidth, height: cropHeight } = crop;
-    const imgX = (parseFloat(left) / 100) * img.width;
-    const imgY = (parseFloat(top) / 100) * img.height;
-    this._imgWidth = (parseFloat(cropWidth) / 100) * img.width;
-    this._imgHeight = (parseFloat(cropHeight) / 100) * img.height;
-    ctx.translate(flip.horizontal ? width : 0, flip.vertical ? height : 0);
-    ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1);
-    ctx.translate(width / 2, height / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.translate(-width / 2, -height / 2);
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, width, height);
-    const canvasWidth = this._imgWidth * scale;
-    const canvasHeight = this._imgHeight * scale;
-    const canvasX = width / 2 - canvasWidth / 2;
-    const canvasY = height / 2 - canvasHeight / 2;
-    ctx.drawImage(
-      img,
-      imgX,
-      imgY,
-      this._imgWidth,
-      this._imgHeight,
-      canvasX,
-      canvasY,
-      canvasWidth,
-      canvasHeight
-    );
-    if (effects.grayscale) {
-      const imageData = ctx.getImageData(
-        canvasX,
-        canvasY,
-        canvasWidth,
-        canvasHeight
-      );
-      grayscale(imageData.data);
-      ctx.putImageData(imageData, canvasX, canvasY);
-    }
-    if (saturation !== 0) {
-      const imageData = ctx.getImageData(
-        canvasX,
-        canvasY,
-        canvasWidth,
-        canvasHeight
-      );
-      saturate(imageData.data, saturation);
-      ctx.putImageData(imageData, canvasX, canvasY);
-    }
-    ctx.restore();
-  }
+  onCrop = crop => {
+    this.setState({
+      crop
+    });
+  };
 
-  onImageLoaded = event => {
-    const { onImageLoaded } = this.props;
-    console.log("sup");
-    this.setState({ img: event.target });
-    onImageLoaded && onImageLoaded(event.target);
-    this.renderImage();
+  onImageLoaded = img => {
+    this._img = img;
+  };
+
+  applyCrop = () => {
+    const { editorState, crop } = this.state;
+
+    this.setState({
+      cropping: false,
+      crop: null,
+      editorState: editorState.cropImage(crop, true)
+    });
+  };
+
+  toggleCrop = () => {
+    this.setState({
+      cropping: !this.state.cropping
+    });
+  };
+
+  toggleGrayscale = () => {
+    const { editorState } = this.state;
+    this.setState({
+      editorState: editorState.toggleGrayscale()
+    });
+  };
+
+  undo = () => {
+    this.setState({
+      editorState: this.state.editorState.undo()
+    });
+  };
+
+  redo = () => {
+    this.setState({
+      editorState: this.state.editorState.redo()
+    });
+  };
+
+  updateSaturation = ({ target: { value = "0" } }) => {
+    this.setState({
+      editorState: this.state.editorState.setSaturation(parseInt(value, 10))
+    });
   };
 
   render() {
-    const { src, config, onCrop, editorState, width, height } = this.props;
-    const { scale } = editorState;
-    const { img } = this.state;
-    const { showCropTool } = config;
-
-    console.log(showCropTool, this.img, img);
-
+    const { src } = this.props;
+    const styles = {
+      container: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column"
+      },
+      list: {
+        listStyleType: "none"
+      },
+      listItem: {
+        display: "inline-block"
+      },
+      button: {
+        borderRadius: 0,
+        color: "white",
+        backgroundColor: "black",
+        padding: "5px 10px",
+        borderStyle: "solid",
+        borderColor: "#CCC",
+        borderLeftWidth: 0
+      }
+    };
+    const { editorState, cropping } = this.state;
+    const config = {
+      showCropTool: cropping
+    };
     return (
-      <div style={{ width, height, position: "relative" }}>
-        {showCropTool && img && (
-          <CropTool
-            onChange={onCrop}
-            width={this._imgWidth * scale}
-            height={this._imgHeight * scale}
-          />
-        )}
-        <canvas
-          width={width}
-          height={height}
-          ref={this.canvas}
-          draggable={false}
-        />
-        <img
+      <div style={styles.container}>
+        <ul style={styles.list}>
+          <li style={styles.listItem}>
+            <button
+              style={styles.button}
+              disabled={cropping}
+              onClick={this.undo}
+            >
+              Undo
+            </button>
+          </li>
+          <li style={styles.listItem}>
+            <button
+              style={styles.button}
+              disabled={cropping}
+              onClick={this.redo}
+            >
+              Redo
+            </button>
+          </li>
+          <li style={styles.listItem}>
+            <button
+              style={styles.button}
+              disabled={cropping}
+              onClick={this.rotateLeft}
+            >
+              Rotate Left
+            </button>
+          </li>
+          <li style={styles.listItem}>
+            <button
+              style={styles.button}
+              disabled={cropping}
+              onClick={this.rotateRight}
+            >
+              Rotate Right
+            </button>
+          </li>
+          <li style={styles.listItem}>
+            <button
+              style={styles.button}
+              disabled={cropping}
+              onClick={this.flipHorizontal}
+            >
+              Flip Hori
+            </button>
+          </li>
+          <li style={styles.listItem}>
+            <button
+              style={styles.button}
+              disabled={cropping}
+              onClick={this.flipVertical}
+            >
+              Flip Vert
+            </button>
+          </li>
+          <li style={styles.listItem}>
+            <button
+              style={styles.button}
+              disabled={cropping}
+              onClick={this.toggleGrayscale}
+            >
+              B&W
+            </button>
+          </li>
+          <li style={styles.listItem}>
+            <button style={styles.button} onClick={this.toggleCrop}>
+              Crop
+            </button>
+          </li>
+          {cropping && (
+            <li style={styles.listItem}>
+              <button
+                style={{ ...styles.button, color: "#00ff00" }}
+                onClick={this.applyCrop}
+              >
+                Done
+              </button>
+            </li>
+          )}
+        </ul>
+        <ImageEditor
           src={src}
-          style={{ display: "none" }}
-          onLoad={this.onImageLoaded}
-          alt=""
+          config={config}
+          editorState={editorState}
+          onCrop={this.onCrop}
+          onImageLoaded={this.onImageLoaded}
+          width={900}
+          height={600}
         />
+        <div style={{ marginTop: 20 }}>
+          <label>
+            Saturation:{" "}
+            <input
+              type="range"
+              min="-100"
+              max="100"
+              value={editorState.saturation}
+              onChange={this.updateSaturation}
+            />
+          </label>
+        </div>
       </div>
     );
   }
