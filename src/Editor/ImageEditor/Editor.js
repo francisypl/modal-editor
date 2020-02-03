@@ -39,6 +39,25 @@ export default class ImageEditor extends PureComponent {
     this.renderImage();
   }
 
+  getImageData() {
+    const hiddenCanvas = document.createElement("canvas");
+    hiddenCanvas.setAttribute("width", this._imgWidth);
+    hiddenCanvas.setAttribute("height", this._imgHeight);
+    const hiddenCtx = hiddenCanvas.getContext("2d");
+    hiddenCtx.drawImage(
+      this.canvas.current,
+      this.canvasX,
+      this.canvasY,
+      this._imgWidth,
+      this._imgHeight,
+      0,
+      0,
+      this._imgWidth,
+      this._imgHeight
+    );
+    return hiddenCanvas.toDataURL("image/png");
+  }
+
   renderImage() {
     const { editorState, width, height } = this.props;
     const {
@@ -68,40 +87,40 @@ export default class ImageEditor extends PureComponent {
     ctx.translate(-width / 2, -height / 2);
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, width, height);
-    const canvasWidth = this._imgWidth * scale;
-    const canvasHeight = this._imgHeight * scale;
-    const canvasX = width / 2 - canvasWidth / 2;
-    const canvasY = height / 2 - canvasHeight / 2;
+    this.canvasWidth = this._imgWidth * scale;
+    this.canvasHeight = this._imgHeight * scale;
+    this.canvasX = width / 2 - this.canvasWidth / 2;
+    this.canvasY = height / 2 - this.canvasHeight / 2;
     ctx.drawImage(
       img,
       imgX,
       imgY,
       this._imgWidth,
       this._imgHeight,
-      canvasX,
-      canvasY,
-      canvasWidth,
-      canvasHeight
+      this.canvasX,
+      this.canvasY,
+      this.canvasWidth,
+      this.canvasHeight
     );
     if (effects.grayscale) {
       const imageData = ctx.getImageData(
-        canvasX,
-        canvasY,
-        canvasWidth,
-        canvasHeight
+        this.canvasX,
+        this.canvasY,
+        this.canvasWidth,
+        this.canvasHeight
       );
       grayscale(imageData.data);
-      ctx.putImageData(imageData, canvasX, canvasY);
+      ctx.putImageData(imageData, this.canvasX, this.canvasY);
     }
     if (saturation !== 0) {
       const imageData = ctx.getImageData(
-        canvasX,
-        canvasY,
-        canvasWidth,
-        canvasHeight
+        this.canvasX,
+        this.canvasY,
+        this.canvasWidth,
+        this.canvasHeight
       );
       saturate(imageData.data, saturation);
-      ctx.putImageData(imageData, canvasX, canvasY);
+      ctx.putImageData(imageData, this.canvasX, this.canvasY);
     }
     ctx.restore();
   }

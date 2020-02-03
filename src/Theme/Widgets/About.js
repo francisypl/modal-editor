@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import uuid from "uuid";
 import {
   Base,
@@ -9,34 +9,25 @@ import {
   Container,
   Grid,
   EditableImage,
-  Image,
   Button
 } from "../Elements";
 import Widget from "./Widget";
-
-const data = [
-  "https://img1.wsimg.com/isteam/stock/1036/:/rs=w:600,cg:true,m",
-  "https://img1.wsimg.com/isteam/stock/01rKYZ/:/rs=w:600,cg:true,m",
-  "https://img1.wsimg.com/isteam/stock/1051/:/rs=w:600,cg:true,m"
-];
-
-// const data = [
-//   `https://source.unsplash.com/random/${uuid()}`,
-//   `https://source.unsplash.com/random/${uuid()}`,
-//   `https://source.unsplash.com/random/${uuid()}`
-// ];
+import AppStoreContext, { getAboutCards } from "../../common/AppStoreContext";
 
 const textString =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Et ligula ullamcorper malesuada proin libero nunc.";
 export default function About(props) {
+  const { state } = useContext(AppStoreContext);
+  const data = getAboutCards(state);
   return (
     <Widget {...props}>
       <Section bg="pageBackground" py={80} px={20}>
         <Container>
           <Grid gridTemplateColumns="1fr 1fr 1fr" gridGap="2em">
-            {data.map((img, i) => (
+            {data.map(({ id, img }, i) => (
               <Flex key={i} flexDirection="column" justifyContent="center">
                 <EditableImage
+                  id={id}
                   editing={i === 0}
                   treatment="cover"
                   height={200}

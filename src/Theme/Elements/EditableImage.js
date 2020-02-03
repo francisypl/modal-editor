@@ -12,7 +12,7 @@ import AppStoreContext, {
 } from "../../common/AppStoreContext";
 import ImageEditor from "../../Editor/ImageEditor";
 
-export function EditableImage({ style, editing, src, ...props }) {
+export function EditableImage({ id, style, editing, src, ...props }) {
   const [showEditOption, setShowEditOption] = useState(false);
   const [ref, setRef] = useState();
   const { dispatch } = useContext(AppStoreContext);
@@ -24,7 +24,7 @@ export function EditableImage({ style, editing, src, ...props }) {
   function handleStartCrop(cropStyle) {
     dispatch({
       type: SET_MODAL_ACTION,
-      payload: <ImageEditor cropStyle={cropStyle} src={src} />
+      payload: <ImageEditor cropStyle={cropStyle} src={src} id={id} />
     });
   }
 

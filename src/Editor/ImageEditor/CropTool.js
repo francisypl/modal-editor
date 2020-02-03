@@ -71,6 +71,8 @@ function getHorizontalCrop(width, height) {
     if (size.some(size => size < 0)) {
       size = cropHeightWithAspectRatio(width, height, HORIZONTAL_ASPECT_RATIO);
     }
+  } else {
+    size = cropHeightWithAspectRatio(width, height, HORIZONTAL_ASPECT_RATIO);
   }
   return size;
 }
@@ -87,6 +89,8 @@ function getVerticalCrop(width, height) {
     if (size.some(size => size < 0)) {
       size = cropWidthWithAspectRaio(width, height, VERTICAL_ASPECT_RATIO);
     }
+  } else {
+    size = cropWidthWithAspectRaio(width, height, VERTICAL_ASPECT_RATIO);
   }
   return size;
 }
